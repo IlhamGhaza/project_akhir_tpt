@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
+#include <ctype.h>
 
 //definsi
 int choice;
@@ -46,12 +47,9 @@ puts("\nSelamat datang di Program Keuangan\n");
 
         // Input pilihan user
         printf("Pilih menu (0-6): ");
-        scanf("%d", &choice);
-        printf("\n");
 
         // ERROR HANDLING ("PENANGANAN ERROR"):
-
-        if (scanf("%d", &choice) != 1) {
+         if (scanf("%d", &choice) != 1) {
             // Handle invalid input (non-integer)
             printf("Input tidak valid. Silakan masukkan angka.\n");
 
@@ -84,12 +82,11 @@ puts("\nSelamat datang di Program Keuangan\n");
                 break;
             case 6:
                 char pilih;
-                puts("data akan hilang, pastikan untuk ekspor terlebih dahulu");
-                puts("");
+                puts("alert : data akan hilang, pastikan untuk ekspor terlebih dahulu");
                 getchar();
                 getchar();
                 printf("Keluar dari program? y/n ");
-                scanf("%d", &pilih);
+                scanf("%c", &pilih);
                 pilih = tolower(pilih);
                 if (pilih =="y"){
                     printf("keluar dari program. Terima kasih \n");
@@ -99,7 +96,7 @@ puts("\nSelamat datang di Program Keuangan\n");
                 break;
             default:
                 printf("Pilihan tidak valid. Silakan pilih lagi.\n");
-                return;
+                //return;
         }
 /*
         // Jeda sejenak untuk memberi waktu user membaca pesan
