@@ -32,7 +32,7 @@ void edit();
 void hitung();
 
 int main() {
-puts("\nSelamat datang di Program Keuangan\n");
+puts("\nSelamat datang di Program Keuangan");
     while (1) {
     //do {
         // Tampilkan menu
@@ -105,16 +105,23 @@ puts("\nSelamat datang di Program Keuangan\n");
 
 //import atau ekspor file
 void importfile() {
-    int choice;
-    printf("Import/eksport? (1/2): ");
+    puts("\nImport/ekspor");
+    printf("Pilih operasi\n");
+    printf("1. Import\n");
+    printf("2. Ekspor\n");
+    printf("3. Back\n");
+    printf("Masukkan angka (1-3) : ");
     scanf("%d", &choice);
+
+    // Consume the newline character from the input buffer
+    getchar();
 
     if (choice == 1) {
         // Import Files
         if (!isImported) {
             char fileName[50];
             printf("Masukkan nama file yang akan diimport (.txt): ");
-            scanf("%s", fileName);
+            scanf("%49s", fileName);
             
             // Proses import file
             FILE *file = fopen(fileName, "r");
@@ -135,37 +142,34 @@ void importfile() {
         }
     } else if (choice == 2) {
         // Eksport File
-        if (isImported) {
-            char fileName[50];
-            printf("Masukkan nama file untuk diekspor (.txt): ");
-            scanf("%s", fileName);
+        char fileName[50];
+        printf("Masukkan nama file untuk diekspor (.txt): ");
+        scanf("%49s", fileName);
 
-            // Proses ekspor file
-            FILE *file = fopen(fileName, "w");
-            if (file == NULL) {
-                printf("Gagal membuka file %s\n", fileName);
-                return;
-            } else {
-                // Tulis data ke file (disesuaikan dengan format file Anda)
-                for (int i = 0; i < countPendapatan; i++) {
-                    fprintf(file, "%s %.2f\n", pendapatan[i].catatan, pendapatan[i].jumlah);
-                }
-                for (int i = 0; i < countPengeluaran; i++) {
-                    fprintf(file, "%s %.2f\n", pengeluaran[i].catatan, pengeluaran[i].jumlah);
-                }
-                printf("File berhasil diekspor dengan nama %s.\n", fileName);
-                fclose(file);
-            }
+        FILE *file = fopen(fileName, "w");
+        if (file == NULL) {
+            printf("Gagal membuka file %s\n", fileName);
+            return;
         } else {
-            printf("Tidak dapat mengekspor karena belum ada file yang diimpor.\n");
-        }
+            // Tulis data pendapatan ke file (disesuaikan dengan format file Anda)
+            for (int i = 0; i < countPendapatan; i++) {
+                fprintf(file, "%s %.2f\n", pendapatan[i].catatan, pendapatan[i].jumlah);
+            }
+            // Tulis data pengeluaran ke file (disesuaikan dengan format file Anda)
+            for (int i = 0; i < countPengeluaran; i++) {
+                fprintf(file, "%s %.2f\n", pengeluaran[i].catatan, pengeluaran[i].jumlah);
+            }
+
+            printf("File berhasil diekspor dengan nama %s. Disimpan di direktori: %s\n", fileName, getcwd(NULL, 0));
+            fclose(file);
+    }
     } else {
         printf("Input tidak valid.\n");
     }
 }
 
 
-//pendaptan 
+//pendaptan Pendapatan/pengeluaran
 void Add() {
     puts("\nTambahkan Pendapatan/pengeluaran");
     printf("pilih operasi\n");
@@ -184,7 +188,6 @@ void Add() {
                     printf("Input tidak valid. Masukkan jumlah pendapatan yang benar: ");
                     while (getchar() != '\n'); // Membersihkan buffer input
                 }
-
                 // Validasi nama catatan
                 char catatan[50];
                 printf("Masukkan catatan pendapatan: ");
@@ -197,7 +200,6 @@ void Add() {
                 strcpy(pendapatan[countPendapatan].catatan, catatan);
                 
                 //char* strcpy(char* destination, const char* source);
-
 
                 printf("Pendapatan berhasil ditambahkan.\n");
                 countPendapatan++;
