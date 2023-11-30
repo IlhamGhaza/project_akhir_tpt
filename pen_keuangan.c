@@ -3,14 +3,14 @@
 #include <string.h>
 #include <ctype.h>
 
-//definsi
+//inisiasi global
 int choice;
 #define MAX_RECORDS 100
 
 bool isImported = false;
 
 struct Record {
-    double jumlah; 
+    double uang; 
     char catatan[50];
 };
 
@@ -28,6 +28,8 @@ double totalPengeluaran = 0;
 void importfile();
 void Add();
 void tampilkan();
+void displayAllPendapatan();
+void displayAllPengeluaran();
 void edit();
 void hitung();
 
@@ -113,24 +115,29 @@ void importfile() {
     printf("Masukkan angka (1-3) : ");
     scanf("%d", &choice);
 
-    // Consume the newline character from the input buffer
     getchar();
 
     if (choice == 1) {
-        // Import Files
         if (!isImported) {
             char fileName[50];
             printf("Masukkan nama file yang akan diimport (.txt): ");
             scanf("%49s", fileName);
-            
-            // Proses import file
-            FILE *file = fopen(fileName, "r");
+
+            FILE *file = fopen(fileName, "rb");
             if (file == NULL) {
                 printf("Gagal membuka file. File tidak ditemukan atau terjadi kesalahan lain.\n");
             } else {
-                // Proses membaca data dari file (disesuaikan dengan format file Anda)
-                while (fscanf(file, "%s %f", pendapatan[countPendapatan].catatan, &pendapatan[countPendapatan].jumlah) == 2) {
-                    countPendapatan++;
+                char type[15]; 
+                // Read previous total values
+                fscanf(file, "Total Pendapatan : %lf\n", &totalPendapatan);
+                fscanf(file, "Total Pengeluaran : %lf\n", &totalPengeluaran);
+                // Update import format handling
+                while (fscanf(file, "%s %lf, %[^\n]", type, &pendapatan[countPendapatan].uang, pendapatan[countPendapatan].catatan) == 3) {
+                    if (strcmp(type, "Pendapatan") == 0) {
+                        countPendapatan++;
+                    } else if (strcmp(type, "Pengeluaran") == 0) {
+                        countPengeluaran++;
+                    }
                 }
 
                 printf("File %s berhasil diimport.\n", fileName);
@@ -141,32 +148,36 @@ void importfile() {
             printf("File sudah diimpor sebelumnya.\n");
         }
     } else if (choice == 2) {
-        // Eksport File
         char fileName[50];
         printf("Masukkan nama file untuk diekspor (.txt): ");
         scanf("%49s", fileName);
 
-        FILE *file = fopen(fileName, "w");
+        FILE *file = fopen(fileName, "wb");
         if (file == NULL) {
             printf("Gagal membuka file %s\n", fileName);
             return;
         } else {
-            // Tulis data pendapatan ke file (disesuaikan dengan format file Anda)
+            // Update export format handling
+            fprintf(file, "Total Pendapatan : %.2f\n", totalPendapatan);
+            fprintf(file, "Total Pengeluaran : %.2f\n", totalPengeluaran);
+
             for (int i = 0; i < countPendapatan; i++) {
-                fprintf(file, "%s %.2f\n", pendapatan[i].catatan, pendapatan[i].jumlah);
+                // Update export format handling
+                fprintf(file, "Pendapatan : %d. uang: %.2f, Catatan: %s", i + 1, pendapatan[i].uang, pendapatan[i].catatan);
             }
-            // Tulis data pengeluaran ke file (disesuaikan dengan format file Anda)
             for (int i = 0; i < countPengeluaran; i++) {
-                fprintf(file, "%s %.2f\n", pengeluaran[i].catatan, pengeluaran[i].jumlah);
+                // Update export format handling
+                fprintf(file, "Pengeluaran : %d. uang: %.2f, Catatan: %s", i + 1, pengeluaran[i].uang, pengeluaran[i].catatan);
             }
 
             printf("File berhasil diekspor dengan nama %s. Disimpan di direktori: %s\n", fileName, getcwd(NULL, 0));
             fclose(file);
-    }
+        }
     } else {
         printf("Input tidak valid.\n");
     }
 }
+
 
 
 //pendaptan Pendapatan/pengeluaran
@@ -181,22 +192,22 @@ void Add() {
     
     if (choice==1) {
         //pendapatan
-        float jumlah;
+        float uang;
         if (countPendapatan < MAX_RECORDS) {
-            printf("Masukkan jumlah pendapatan: ");
-                while (scanf("%f", &jumlah) != 1 || jumlah <= 0) {
-                    printf("Input tidak valid. Masukkan jumlah pendapatan yang benar: ");
+            printf("Masukkan uang pendapatan: ");
+                while (scanf("%f", &uang) != 1 || uang <= 0) {
+                    printf("Input tidak valid. Masukkan uang pendapatan yang benar: ");
                     while (getchar() != '\n'); // Membersihkan buffer input
                 }
                 // Validasi nama catatan
-                char catatan[50];
-                printf("Masukkan catatan pendapatan: ");
+            char catatan[50];
+            printf("Masukkan catatan pendapatan: ");
                 while (scanf("%49s", catatan) != 1 || catatan[0] == '\0') {
                     printf("Input tidak valid. Masukkan catatan pendapatan yang benar: ");
                     while (getchar() != '\n');
                 }
-                totalPendapatan += jumlah; //totalPendapatan = totalPendapatan + jumlah
-                pendapatan[countPendapatan].jumlah = jumlah;
+                totalPendapatan += uang; 
+                pendapatan[countPendapatan].uang = uang;
                 strcpy(pendapatan[countPendapatan].catatan, catatan);
                 
                 //char* strcpy(char* destination, const char* source);
@@ -204,17 +215,17 @@ void Add() {
                 printf("Pendapatan berhasil ditambahkan.\n");
                 countPendapatan++;
                 
-            } else {
-                printf("Catatan pendapatan penuh. Silakan ekspor terlebih dahulu.\n");
-            };
+        } else {
+            printf("Catatan pendapatan penuh. Silakan ekspor terlebih dahulu.\n");
+        };
 
     }else if(choice == 2){
         //pengeluaran
-        float jumlah;
+        float uang;
         if (countPengeluaran < MAX_RECORDS) {
-            printf("\nMasukkan jumlah pengeluaran: ");
-            while (scanf("%f", &jumlah) != 1 || jumlah <= 0) {
-                printf("Input tidak valid. Masukkan jumlah pendapatan yang benar: ");
+            printf("\nMasukkan uang pengeluaran: ");
+            while (scanf("%f", &uang) != 1 || uang <= 0) {
+                printf("Input tidak valid. Masukkan uang pendapatan yang benar: ");
                 while (getchar() != '\n'); // Membersihkan buffer input
             }
 
@@ -225,8 +236,8 @@ void Add() {
                 printf("Input tidak valid. Masukkan catatan pendapatan yang benar: ");
                 while (getchar() != '\n');
             }
-            totalPengeluaran += jumlah; //totalPendapatan = totalPendapatan + jumlah
-            pengeluaran[countPengeluaran].jumlah = jumlah;
+            totalPengeluaran += uang; //totalPendapatan = totalPendapatan + uang
+            pengeluaran[countPengeluaran].uang = uang;
             strcpy(pengeluaran[countPengeluaran].catatan, catatan);
 
             printf("Pengeluaran berhasil ditambahkan.\n");
@@ -247,14 +258,22 @@ void Add() {
 
 //menampilkan semua 
 void tampilkan() {
-    printf("\nCatatan Pendapatan:\n");
-    for (int i = 0; i < countPendapatan; i++) {
-        printf("Catatan: %s, Jumlah: %.2f\n", pendapatan[i].catatan, pendapatan[i].jumlah);
-    }
+   displayAllPendapatan();
+   displayAllPengeluaran();
+}
 
+void displayAllPendapatan() {
+    printf("\nCatatan Pemasukkan:\n");
+    for (int i = 0; i < countPendapatan; i++) {
+        printf("%d. uang: %.2f, Catatan: %s", i + 1, pendapatan[i].uang, pendapatan[i].catatan);
+    }
+}
+
+void displayAllPengeluaran() {
     printf("\nCatatan Pengeluaran:\n");
     for (int i = 0; i < countPengeluaran; i++) {
-        printf("Catatan: %s, Jumlah: %.2f\n", pengeluaran[i].catatan, pengeluaran[i].jumlah);
+        printf("%d. uang: %.2f, Catatan: %s", i + 1, pengeluaran[i].uang, pengeluaran[i].catatan);
+
     }
 }
 
@@ -282,13 +301,13 @@ void edit() {
             if (choice == 1) {
                 // Edit Pemasukkan
                 displayAllPendapatan(); // Tampilkan catatan pemasukkan sebelumnya
-                printf("Pilih nomor catatan yang ingin diubah: ");
+                printf("\nPilih nomor catatan yang ingin diubah: ");
                 int index;
                 scanf("%d", &index);
 
                 if (index >= 1 && index <= countPendapatan) {
-                    printf("Masukkan jumlah baru: ");
-                    scanf("%f", &pendapatan[index - 1].jumlah);
+                    printf("Masukkan uang baru: ");
+                    scanf("%f", &pendapatan[index - 1].uang);
 
                     printf("Masukkan catatan baru: ");
                     scanf("%s", pendapatan[index - 1].catatan);
@@ -300,15 +319,15 @@ void edit() {
                 }
 
             } else if (pilihan == 2) {
-                // Edit Pengeluaran
+                // edit Pengeluaran
                 displayAllPengeluaran(); // Tampilkan catatan pengeluaran sebelumnya
-                printf("Pilih nomor catatan yang ingin diubah: ");
+                printf("\nPilih nomor catatan yang ingin diubah: ");
                 int index;
                 scanf("%d", &index);
 
                 if (index >= 1 && index <= countPengeluaran) {
-                    printf("Masukkan jumlah baru: ");
-                    scanf("%f", &pengeluaran[index - 1].jumlah);
+                    printf("Masukkan uang baru: ");
+                    scanf("%f", &pengeluaran[index - 1].uang);
 
                     printf("Masukkan catatan baru: ");
                     scanf("%s", pengeluaran[index - 1].catatan);
@@ -378,20 +397,6 @@ void edit() {
     }
 }
 
-void displayAllPendapatan() {
-    printf("\nCatatan Pemasukkan:\n");
-    for (int i = 0; i < countPendapatan; i++) {
-        printf("%d. Catatan: %s, Jumlah: %.2f\n", i + 1, pendapatan[i].catatan, pendapatan[i].jumlah);
-    }
-}
-
-void displayAllPengeluaran() {
-    printf("\nCatatan Pengeluaran:\n");
-    for (int i = 0; i < countPengeluaran; i++) {
-        printf("%d. Catatan: %s, Jumlah: %.2f\n", i + 1, pengeluaran[i].catatan, pengeluaran[i].jumlah);
-    }
-}
-
 
 
 //hitung 
@@ -401,12 +406,12 @@ void hitung(){
 
     // Hitung total pendapatan
     for (int i = 0; i < countPendapatan; i++) {
-        totalPendapatan += pendapatan[i].jumlah;
+        totalPendapatan += pendapatan[i].uang;
     }
 
     // Hitung total pengeluaran
     for (int i = 0; i < countPengeluaran; i++) {
-        totalPengeluaran += pengeluaran[i].jumlah;
+        totalPengeluaran += pengeluaran[i].uang;
     }
 
     // Hitung total akhir
